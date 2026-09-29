@@ -42,6 +42,7 @@ import {
 
 type View = 'home' | 'login' | 'dashboard';
 type Language = 'en' | 'hi';
+type StakeholderRole = 'Central Ministry' | 'State Government' | 'District Administration' | 'Implementing Agency';
 type IconType = typeof FileText;
 
 const translations = {
@@ -86,13 +87,23 @@ const LanguageContext = createContext<{ language: Language; setLanguage: (langua
 const useLanguage = () => { const context = useContext(LanguageContext); return { ...context, t: (key: TranslationKey) => translations[context.language][key] }; };
 
 const LOGIN_BG = '/images/hero-background.jpeg';
+const LOGIN_PAGE_BG = '/images/rashtrapati-bhavan.jpg';
 const LOGIN_VIDEO = '/images/background-video.mp4';
 const MAP_BG =
   'https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1400&q=80';
 
-const credentials = {
-  username: 'vikas.patil@nashik.gov.in',
-  password: 'NLA@District2026',
+const stakeholderAccounts: Record<StakeholderRole, { username: string; password: string; label: string; initials: string }> = {
+  'Central Ministry': { username: 'rohit.sharma@dolr.gov.in', password: 'NLA@Central2026', label: 'Central Ministry Officer', initials: 'CM' },
+  'State Government': { username: 'anita.deshmukh@maharashtra.gov.in', password: 'NLA@State2026', label: 'State Government Officer', initials: 'SG' },
+  'District Administration': { username: 'vikas.patil@nashik.gov.in', password: 'NLA@District2026', label: 'District Administrator', initials: 'DA' },
+  'Implementing Agency': { username: 'projectoffice@nhai.gov.in', password: 'NLA@Agency2026', label: 'Implementing Agency Officer', initials: 'IA' },
+};
+
+const roleNavigation: Record<StakeholderRole, string[]> = {
+  'Central Ministry': ['Dashboard', 'Projects', 'Approvals', 'Notifications', 'Awards', 'Analytics', 'Reports', 'Documents', 'Settings', 'DPR Assessment'],
+  'State Government': ['Dashboard', 'Projects', 'Approvals', 'Notifications', 'Awards', 'Compensation', 'Analytics', 'Reports', 'Documents', 'Settings', 'DPR Assessment'],
+  'District Administration': ['Dashboard', 'Projects', 'Approvals', 'Notifications', 'Awards', 'Compensation', 'Land Parcels', 'R&R', 'Documents', 'Analytics', 'Reports', 'Settings', 'DPR Assessment'],
+  'Implementing Agency': ['Dashboard', 'Projects', 'Land Parcels', 'Compensation', 'R&R', 'Documents', 'Reports', 'DPR Assessment'],
 };
 
 const sidebarItems = [
@@ -100,12 +111,15 @@ const sidebarItems = [
   { label: 'Projects', icon: FolderOpen },
   { label: 'Land Parcels', icon: MapPin },
   { label: 'Approvals', icon: ShieldCheck },
+  { label: 'Notifications', icon: Bell },
+  { label: 'Awards', icon: ShieldCheck },
   { label: 'Compensation', icon: IndianRupee },
   { label: 'R&R', icon: House },
   { label: 'Documents', icon: FileText },
   { label: 'Analytics', icon: BarChart3 },
   { label: 'Reports', icon: Layers },
   { label: 'Settings', icon: Settings },
+  { label: 'DPR Assessment', icon: FileText },
 ];
 
 const kpiCards = [
@@ -212,10 +226,10 @@ function ToneIcon({ icon: Icon, tone, size = 22 }: { icon: IconType; tone: strin
 }
 
 function BrandBlock() {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   return (
     <div className="min-w-0 text-left">
-      <p className="text-[17px] font-bold leading-tight text-[#123a7c]">{t('platform')}</p>
+      <p className="brand-name text-[17px] font-bold leading-tight"><span className="brand-bhoomi">{language === 'hi' ? 'भूमि' : 'Bhoomi'}</span><span className="brand-darpan">{language === 'hi' ? ' दर्पण' : 'Darpan'}</span></p>
       <p className="mt-0.5 text-[11px] text-slate-500">{t('tagline')}</p>
     </div>
   );
@@ -226,8 +240,8 @@ function PublicHeader({ onNav, onLogin }: { onNav?: (label: string) => void; onL
   const items = ['Home', 'About', 'How It Works', 'Projects', 'Contact'];
   const labels = [t('home'), t('about'), t('howItWorks'), t('projects'), t('contact')];
   return (
-    <header className="relative z-20 border-b border-white/60 bg-white/95 shadow-sm backdrop-blur">
-      <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
+    <header className="public-navbar z-20 rounded-2xl border border-white/45 bg-white/35 shadow-[0_12px_30px_rgba(15,45,90,0.1)] backdrop-blur-xl">
+      <div className="mx-auto flex min-h-[72px] max-w-[1440px] items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
         <BrandBlock />
         <nav className="hidden items-center gap-6 lg:flex">
           {items.map((item, index) => (
@@ -251,7 +265,9 @@ function PublicHeader({ onNav, onLogin }: { onNav?: (label: string) => void; onL
 
 function PublicFooter() {
   return <footer className="public-footer">
-    <div className="footer-location-layout"><div className="footer-links-column"><h2>Our Links</h2><div className="footer-links"><button type="button">› LA Target Monitoring</button><button type="button">› About Us</button><button type="button">› Public Grievances</button><button type="button">› Act</button><button type="button">› Search</button><button type="button">› FAQs</button><button type="button">› Privacy Policy</button></div></div><div className="footer-location"><h2>Location</h2><div className="location-map" style={{ backgroundImage: `url(${MAP_BG})` }}><div className="location-label"><MapPin size={18} /> Transport Bhawan</div><div className="location-zoom"><button type="button" aria-label="Zoom in">+</button><button type="button" aria-label="Zoom out">−</button></div></div></div></div>
+    <div className="footer-government-bar">Government of India <span>|</span> Ministry of Rural Development</div>
+    <div className="footer-content"><div className="footer-about"><div className="footer-brand-mark"><span>B</span></div><h2><span className="brand-bhoomi">Bhoomi</span><span className="brand-darpan">Darpan</span></h2><p className="footer-subtitle">Land Governance Platform</p><p className="footer-description">Enabling transparent land acquisition, coordinated governance, and data-driven infrastructure development across India.</p><p className="footer-contact"><MapPin size={15} /> Vigyan Bhawan Annexe, New Delhi - 110011</p><p className="footer-contact"><Mail size={15} /> support@bhoomidarpan.gov.in</p><p className="footer-contact"><MessageSquareText size={15} /> +91-11-23093000</p></div><div className="footer-column"><h3>Quick Links</h3><button type="button">Dashboard</button><button type="button">DPR Assessment</button><button type="button">Reports &amp; Analytics</button><button type="button">Project Management</button><button type="button">Help &amp; Support</button></div><div className="footer-column"><h3>Government Resources</h3><button type="button">India.gov.in ↗</button><button type="button">Digital India ↗</button><button type="button">MyGov.in ↗</button><button type="button">Open Data Portal ↗</button><button type="button">PM-JAY ↗</button></div><div className="footer-column"><h3>Land Governance</h3><button type="button">Central Ministries ↗</button><button type="button">State Governments ↗</button><button type="button">District Authorities ↗</button><button type="button">Implementing Agencies ↗</button><button type="button">About BhoomiDarpan</button></div></div>
+    <div className="footer-bottom"><span>© 2026 BhoomiDarpan, Government of India. All rights reserved.</span><div><button type="button">Privacy Policy</button><button type="button">Terms of Service</button><button type="button">Accessibility</button><button type="button">Site Map</button></div></div>
     <button type="button" className="back-top" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="Back to top"><ArrowUp size={20} /></button>
   </footer>;
 }
@@ -276,7 +292,7 @@ function HomePage({ onLogin }: { onLogin: () => void }) {
             </div>
           </div>
         </section>
-        <section id="about" className="mx-auto max-w-6xl px-5 py-16 sm:px-8"><div className="grid gap-5 md:grid-cols-3"><div className="card p-5"><ShieldCheck className="text-blue-600" /><h2 className="mt-4 font-bold text-[#123e7e]">Secure Access</h2><p className="mt-2 text-sm text-slate-500">Role-based access for authorized departments and agencies.</p></div><div className="card p-5"><Database className="text-emerald-600" /><h2 className="mt-4 font-bold text-[#123e7e]">Integrated Records</h2><p className="mt-2 text-sm text-slate-500">Unified project, parcel, document, and compensation records.</p></div><div className="card p-5"><BarChart3 className="text-violet-600" /><h2 className="mt-4 font-bold text-[#123e7e]">Real-time Monitoring</h2><p className="mt-2 text-sm text-slate-500">Track progress, approvals, risks, and key milestones.</p></div></div></section>
+        <section id="about" className="mx-auto max-w-6xl px-5 py-16 sm:px-8"><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"><div className="card p-5"><ShieldCheck className="text-blue-600" /><h2 className="mt-4 font-bold text-[#123e7e]">Secure Access</h2><p className="mt-2 text-sm text-slate-500">Role-based access for authorized departments and agencies.</p></div><div className="card p-5"><Database className="text-emerald-600" /><h2 className="mt-4 font-bold text-[#123e7e]">Integrated Records</h2><p className="mt-2 text-sm text-slate-500">Unified project, parcel, document, and compensation records.</p></div><div className="card p-5"><BarChart3 className="text-violet-600" /><h2 className="mt-4 font-bold text-[#123e7e]">Real-time Monitoring</h2><p className="mt-2 text-sm text-slate-500">Track progress, approvals, risks, and key milestones.</p></div><div className="card p-5"><MapIcon className="text-orange-500" /><h2 className="mt-4 font-bold text-[#123e7e]">GIS Land Mapping</h2><p className="mt-2 text-sm text-slate-500">Geo-tag parcels and visualize project boundaries on interactive maps.</p></div><div className="card p-5"><Activity className="text-red-500" /><h2 className="mt-4 font-bold text-[#123e7e]">Compensation Tracking</h2><p className="mt-2 text-sm text-slate-500">Monitor assessment, approvals, disbursement, and payment status.</p></div><div className="card p-5"><Users className="text-green-600" /><h2 className="mt-4 font-bold text-[#123e7e]">R&amp;R Monitoring</h2><p className="mt-2 text-sm text-slate-500">Track affected families, rehabilitation packages, and resettlement milestones.</p></div><div className="card p-5"><FileText className="text-blue-600" /><h2 className="mt-4 font-bold text-[#123e7e]">Document Management</h2><p className="mt-2 text-sm text-slate-500">Maintain secure files with version control and audit-ready history.</p></div><div className="card p-5"><Network className="text-teal-600" /><h2 className="mt-4 font-bold text-[#123e7e]">Automated Workflows</h2><p className="mt-2 text-sm text-slate-500">Route proposals, approvals, notifications, and awards to the right authority.</p></div><div className="card p-5"><Sparkles className="text-violet-600" /><h2 className="mt-4 font-bold text-[#123e7e]">Predictive Insights</h2><p className="mt-2 text-sm text-slate-500">Identify delays, risks, and milestone issues before they affect delivery.</p></div></div></section>
         <section id="services" className="bg-white px-5 py-16 text-center"><h2 className="text-2xl font-bold text-[#123e7e]">{t('stakeholderPlatform')}</h2><p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate-500">Connect Central Ministries, State Governments, District Authorities, and Implementing Agencies through one transparent workflow.</p></section>
       </main>
       <PublicFooter />
@@ -284,34 +300,42 @@ function HomePage({ onLogin }: { onLogin: () => void }) {
   );
 }
 
-function LoginPage({ onLogin }: { onLogin: () => void }) {
+function LoginPage({ onLogin }: { onLogin: (role: StakeholderRole) => void }) {
   const { t } = useLanguage();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const [username, setUsername] = useState(credentials.username);
-  const [password, setPassword] = useState(credentials.password);
+  const [role, setRole] = useState<StakeholderRole>('District Administration');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
+  const changeRole = (nextRole: StakeholderRole) => {
+    setRole(nextRole);
+    setUsername('');
+    setPassword('');
+    setError('');
+  };
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    if (username.trim() === credentials.username && password === credentials.password) {
+    const account = stakeholderAccounts[role];
+    if (username.trim() === account.username && password === account.password) {
       setError('');
-      onLogin();
+      onLogin(role);
       return;
     }
-    setError('Invalid credentials. Use the demo District Administrator account.');
+    setError('The credentials could not be verified for the selected stakeholder role.');
   };
 
   return (
     <div className="min-h-screen bg-[#eef3f8]">
       <PublicHeader />
-      <section className="relative min-h-[calc(100vh-72px)] overflow-hidden">
+      <section className="relative min-h-screen overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${LOGIN_BG})` }}
+          style={{ backgroundImage: `url(${LOGIN_PAGE_BG})` }}
         />
-        <video className="absolute inset-0 h-full w-full object-cover" src={LOGIN_VIDEO} autoPlay muted loop playsInline poster={LOGIN_BG} aria-hidden="true" />
         <div className="absolute inset-0 bg-gradient-to-r from-white via-white/92 to-white/35" />
-        <div className="relative mx-auto grid max-w-[1440px] gap-10 px-5 py-10 sm:px-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:px-10 lg:py-14">
+        <div className="relative mx-auto grid max-w-[1440px] gap-10 px-5 pb-10 pt-32 sm:px-8 sm:pt-36 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:px-10 lg:py-14 lg:pt-32">
           <div className="max-w-[640px]">
             <div className="mb-4 flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.08em] text-[#56708f]">
               <span className="h-[3px] w-9 bg-[#f39b3a]" />
@@ -349,6 +373,13 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
             </div>
 
             <label className="block text-[12px] font-semibold text-slate-600">
+              Stakeholder Role
+              <select value={role} onChange={(event) => changeRole(event.target.value as StakeholderRole)} className="mt-2 w-full rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 text-sm outline-none focus:border-[#0b3b82]">
+                {(Object.keys(stakeholderAccounts) as StakeholderRole[]).map((item) => <option key={item} value={item}>{item}</option>)}
+              </select>
+            </label>
+
+            <label className="mt-4 block text-[12px] font-semibold text-slate-600">
               {t('officialId')}
               <div className="mt-2 flex items-center gap-2 rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 focus-within:border-[#0b3b82]">
                 <Mail size={16} className="text-slate-400" />
@@ -421,9 +452,6 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
               {t('secureNotice')}
             </div>
 
-            <p className="mt-4 text-center text-[10px] text-slate-400">
-              Demo: {credentials.username} / {credentials.password}
-            </p>
           </form>
         </div>
       </section>
@@ -432,21 +460,110 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
   );
 }
 
-function DashboardShell({ onLogout }: { onLogout: () => void }) {
+type ProposalRecord = { name: string; agency: string; state: string; district: string; category: string; area: string; families: string; status: string; reference: string; submittedAt: string };
+
+function ProposalWorkspace({ showNotice, onSubmitted }: { showNotice: (text: string) => void; onSubmitted: (proposal: ProposalRecord) => void }) {
+  const [status, setStatus] = useState('Draft');
+  const [form, setForm] = useState({ name: '', agency: '', state: 'Maharashtra', district: 'Nashik', category: 'Highway', area: '', families: '' });
+  const updateField = (field: keyof typeof form, value: string) => setForm((current) => ({ ...current, [field]: value }));
+  const saveDraft = () => { setStatus('Draft'); showNotice('Proposal saved as draft'); };
+  const submitProposal = (event: FormEvent) => { event.preventDefault(); const proposal = { ...form, status: 'Submitted for Verification', reference: `BD-${Date.now().toString().slice(-6)}`, submittedAt: new Date().toLocaleDateString('en-IN') }; setStatus(proposal.status); onSubmitted(proposal); showNotice(`Proposal ${proposal.reference} submitted for verification`); };
+
+  return <section className="space-y-5">
+    <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wide text-blue-600">Project workspace</p><h1 className="mt-1 text-2xl font-bold text-[#123e7e]">Submit Project Proposal</h1><p className="mt-1 text-sm text-slate-500">Create and route a land acquisition proposal for digital scrutiny.</p></div><span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700">Status: {status}</span></div>
+    <form onSubmit={submitProposal} className="card p-5 sm:p-6"><div className="grid gap-4 md:grid-cols-2"><label className="text-xs font-semibold text-slate-600 md:col-span-2">Project name<input required value={form.name} onChange={(event) => updateField('name', event.target.value)} className="mt-2 w-full rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 text-sm outline-none focus:border-blue-500" placeholder="e.g. NH-60 Widening Project" /></label><label className="text-xs font-semibold text-slate-600">Implementing agency<input required value={form.agency} onChange={(event) => updateField('agency', event.target.value)} className="mt-2 w-full rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 text-sm outline-none focus:border-blue-500" placeholder="Department or agency name" /></label><label className="text-xs font-semibold text-slate-600">Project category<select value={form.category} onChange={(event) => updateField('category', event.target.value)} className="mt-2 w-full rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 text-sm outline-none"><option>Highway</option><option>Railway</option><option>Irrigation</option><option>Industrial Corridor</option><option>Renewable Energy</option><option>Urban Development</option></select></label><label className="text-xs font-semibold text-slate-600">State<select value={form.state} onChange={(event) => updateField('state', event.target.value)} className="mt-2 w-full rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 text-sm outline-none"><option>Maharashtra</option><option>Gujarat</option><option>Rajasthan</option><option>Madhya Pradesh</option></select></label><label className="text-xs font-semibold text-slate-600">District<input required value={form.district} onChange={(event) => updateField('district', event.target.value)} className="mt-2 w-full rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 text-sm outline-none" /></label><label className="text-xs font-semibold text-slate-600">Land required (acres)<input required type="number" min="0" value={form.area} onChange={(event) => updateField('area', event.target.value)} className="mt-2 w-full rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 text-sm outline-none" /></label><label className="text-xs font-semibold text-slate-600">Estimated affected families<input required type="number" min="0" value={form.families} onChange={(event) => updateField('families', event.target.value)} className="mt-2 w-full rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 text-sm outline-none" /></label></div><label className="mt-4 block text-xs font-semibold text-slate-600">Proposal documents<input type="file" multiple className="mt-2 block w-full rounded-lg border border-dashed border-[#b9cbe0] bg-[#f8fbff] px-3 py-3 text-xs text-slate-500" /></label><div className="mt-6 flex flex-wrap justify-end gap-3"><button type="button" onClick={saveDraft} className="rounded-lg border border-[#0b3b82] px-4 py-2.5 text-sm font-semibold text-[#0b3b82]">Save Draft</button><button type="submit" className="rounded-lg bg-[#0b3b82] px-4 py-2.5 text-sm font-semibold text-white">Submit for Verification <ArrowRight className="ml-1 inline" size={15} /></button></div></form>
+  </section>;
+}
+
+function VerificationWorkspace({ proposal, showNotice, onUpdate }: { proposal: ProposalRecord | null; showNotice: (text: string) => void; onUpdate: (status: string) => void }) {
+  const [remarks, setRemarks] = useState('');
+  const updateStatus = (status: string) => { onUpdate(status); showNotice(`Proposal ${proposal?.reference ?? ''} marked ${status.toLowerCase()}`); };
+  if (!proposal) return <section className="card p-8 text-center"><ShieldCheck className="mx-auto text-blue-600" size={36} /><h1 className="mt-4 text-xl font-bold text-[#123e7e]">Verification Queue</h1><p className="mt-2 text-sm text-slate-500">No proposals are waiting for verification.</p></section>;
+  return <section className="space-y-5"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wide text-blue-600">Verification workspace</p><h1 className="mt-1 text-2xl font-bold text-[#123e7e]">Review Project Proposal</h1><p className="mt-1 text-sm text-slate-500">Reference: {proposal.reference} · Submitted {proposal.submittedAt}</p></div><span className="rounded-full bg-orange-50 px-3 py-1.5 text-xs font-bold text-orange-700">{proposal.status}</span></div><div className="card p-5"><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><div><p className="text-xs text-slate-500">Project</p><p className="mt-1 font-bold text-[#123e7e]">{proposal.name}</p></div><div><p className="text-xs text-slate-500">Implementing agency</p><p className="mt-1 font-semibold text-slate-700">{proposal.agency}</p></div><div><p className="text-xs text-slate-500">Category</p><p className="mt-1 font-semibold text-slate-700">{proposal.category}</p></div><div><p className="text-xs text-slate-500">Location</p><p className="mt-1 font-semibold text-slate-700">{proposal.district}, {proposal.state}</p></div><div><p className="text-xs text-slate-500">Land required</p><p className="mt-1 font-semibold text-slate-700">{proposal.area} acres</p></div><div><p className="text-xs text-slate-500">Affected families</p><p className="mt-1 font-semibold text-slate-700">{proposal.families}</p></div></div><label className="mt-6 block text-xs font-semibold text-slate-600">Review remarks<textarea value={remarks} onChange={(event) => setRemarks(event.target.value)} rows={4} className="mt-2 w-full rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 text-sm outline-none focus:border-blue-500" placeholder="Add verification remarks or required corrections" /></label><div className="mt-5 flex flex-wrap justify-end gap-3"><button type="button" onClick={() => updateStatus('Sent Back for Correction')} className="rounded-lg border border-orange-400 px-4 py-2.5 text-sm font-semibold text-orange-700">Send Back</button><button type="button" onClick={() => updateStatus('Rejected')} className="rounded-lg border border-red-400 px-4 py-2.5 text-sm font-semibold text-red-600">Reject</button><button type="button" onClick={() => updateStatus('Verified')} className="rounded-lg bg-[#0b3b82] px-4 py-2.5 text-sm font-semibold text-white">Approve Verification <Check className="ml-1 inline" size={15} /></button></div></div></section>;
+}
+
+type NotificationRecord = { number: string; date: string; type: string; villages: string; parcels: string; status: string };
+
+function NotificationWorkspace({ proposal, showNotice, onIssued }: { proposal: ProposalRecord | null; showNotice: (text: string) => void; onIssued: (notification: NotificationRecord) => void }) {
+  const [status, setStatus] = useState('Draft');
+  const [form, setForm] = useState({ number: '', date: '', type: 'Preliminary Notification', villages: '', parcels: '' });
+  const updateField = (field: keyof typeof form, value: string) => setForm((current) => ({ ...current, [field]: value }));
+  const issueNotification = (event: FormEvent) => { event.preventDefault(); const notification = { ...form, status: 'Issued' }; setStatus(notification.status); onIssued(notification); showNotice(`Notification ${form.number} issued successfully`); };
+  if (!proposal || proposal.status !== 'Verified') return <section className="card p-8 text-center"><Bell className="mx-auto text-blue-600" size={36} /><h1 className="mt-4 text-xl font-bold text-[#123e7e]">Notification Management</h1><p className="mt-2 text-sm text-slate-500">A verified proposal is required before issuing a notification.</p></section>;
+  return <section className="space-y-5"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wide text-blue-600">Official notification</p><h1 className="mt-1 text-2xl font-bold text-[#123e7e]">Issue Acquisition Notification</h1><p className="mt-1 text-sm text-slate-500">Proposal {proposal.reference} · {proposal.name}</p></div><span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700">Status: {status}</span></div><form onSubmit={issueNotification} className="card p-5 sm:p-6"><div className="grid gap-4 md:grid-cols-2"><label className="text-xs font-semibold text-slate-600">Notification number<input required value={form.number} onChange={(event) => updateField('number', event.target.value)} className="mt-2 w-full rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 text-sm outline-none focus:border-blue-500" placeholder="e.g. LA/NH60/2026/041" /></label><label className="text-xs font-semibold text-slate-600">Issue date<input required type="date" value={form.date} onChange={(event) => updateField('date', event.target.value)} className="mt-2 w-full rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 text-sm outline-none focus:border-blue-500" /></label><label className="text-xs font-semibold text-slate-600">Notification type<select value={form.type} onChange={(event) => updateField('type', event.target.value)} className="mt-2 w-full rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 text-sm outline-none"><option>Preliminary Notification</option><option>Declaration of Acquisition</option><option>Urgency Notification</option></select></label><label className="text-xs font-semibold text-slate-600">Affected villages<input required value={form.villages} onChange={(event) => updateField('villages', event.target.value)} className="mt-2 w-full rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 text-sm outline-none" placeholder="Separate villages with commas" /></label><label className="text-xs font-semibold text-slate-600">Land parcels covered<input required type="number" min="1" value={form.parcels} onChange={(event) => updateField('parcels', event.target.value)} className="mt-2 w-full rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 text-sm outline-none" /></label></div><label className="mt-4 block text-xs font-semibold text-slate-600">Notification document<input required type="file" className="mt-2 block w-full rounded-lg border border-dashed border-[#b9cbe0] bg-[#f8fbff] px-3 py-3 text-xs text-slate-500" /></label><div className="mt-6 flex justify-end"><button type="submit" className="rounded-lg bg-[#0b3b82] px-4 py-2.5 text-sm font-semibold text-white">Issue Notification <ArrowRight className="ml-1 inline" size={15} /></button></div></form></section>;
+}
+
+type AwardRecord = { number: string; date: string; parcels: string; assessed: string; authority: string; status: string };
+
+function AwardWorkspace({ proposal, notification, showNotice, onDeclared }: { proposal: ProposalRecord | null; notification: NotificationRecord | null; showNotice: (text: string) => void; onDeclared: (award: AwardRecord) => void }) {
+  const [status, setStatus] = useState('Draft');
+  const [form, setForm] = useState({ number: '', date: '', parcels: '', assessed: '', authority: '' });
+  const updateField = (field: keyof typeof form, value: string) => setForm((current) => ({ ...current, [field]: value }));
+  const declareAward = (event: FormEvent) => { event.preventDefault(); const award = { ...form, status: 'Declared' }; setStatus(award.status); onDeclared(award); showNotice(`Award ${form.number} declared successfully`); };
+  if (!proposal || !notification || notification.status !== 'Issued') return <section className="card p-8 text-center"><ShieldCheck className="mx-auto text-blue-600" size={36} /><h1 className="mt-4 text-xl font-bold text-[#123e7e]">Award Declaration</h1><p className="mt-2 text-sm text-slate-500">An issued notification is required before declaring an award.</p></section>;
+  return <section className="space-y-5"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wide text-blue-600">Award workspace</p><h1 className="mt-1 text-2xl font-bold text-[#123e7e]">Declare Land Acquisition Award</h1><p className="mt-1 text-sm text-slate-500">Notification {notification.number} · {proposal.name}</p></div><span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700">Status: {status}</span></div><form onSubmit={declareAward} className="card p-5 sm:p-6"><div className="grid gap-4 md:grid-cols-2"><label className="text-xs font-semibold text-slate-600">Award number<input required value={form.number} onChange={(event) => updateField('number', event.target.value)} className="mt-2 w-full rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 text-sm outline-none focus:border-blue-500" placeholder="e.g. AW/NH60/2026/018" /></label><label className="text-xs font-semibold text-slate-600">Award date<input required type="date" value={form.date} onChange={(event) => updateField('date', event.target.value)} className="mt-2 w-full rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 text-sm outline-none focus:border-blue-500" /></label><label className="text-xs font-semibold text-slate-600">Parcels awarded<input required type="number" min="1" value={form.parcels} onChange={(event) => updateField('parcels', event.target.value)} className="mt-2 w-full rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 text-sm outline-none focus:border-blue-500" /></label><label className="text-xs font-semibold text-slate-600">Compensation assessed (₹)<input required type="number" min="0" value={form.assessed} onChange={(event) => updateField('assessed', event.target.value)} className="mt-2 w-full rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 text-sm outline-none focus:border-blue-500" placeholder="Total assessed amount" /></label><label className="text-xs font-semibold text-slate-600 md:col-span-2">Approving authority<input required value={form.authority} onChange={(event) => updateField('authority', event.target.value)} className="mt-2 w-full rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 text-sm outline-none focus:border-blue-500" placeholder="Authority issuing the award" /></label></div><label className="mt-4 block text-xs font-semibold text-slate-600">Award document<input required type="file" className="mt-2 block w-full rounded-lg border border-dashed border-[#b9cbe0] bg-[#f8fbff] px-3 py-3 text-xs text-slate-500" /></label><div className="mt-6 flex justify-end"><button type="submit" className="rounded-lg bg-[#0b3b82] px-4 py-2.5 text-sm font-semibold text-white">Declare Award <ArrowRight className="ml-1 inline" size={15} /></button></div></form></section>;
+}
+
+function CompensationWorkspace({ award, showNotice }: { award: AwardRecord | null; showNotice: (text: string) => void }) {
+  const [paid, setPaid] = useState('');
+  const [status, setStatus] = useState('Pending Assessment');
+  if (!award || award.status !== 'Declared') return <section className="card p-8 text-center"><IndianRupee className="mx-auto text-blue-600" size={36} /><h1 className="mt-4 text-xl font-bold text-[#123e7e]">Compensation Management</h1><p className="mt-2 text-sm text-slate-500">A declared award is required before tracking compensation.</p></section>;
+  const assessed = Number(award.assessed || 0);
+  const paidAmount = Number(paid || 0);
+  const recordPayment = (event: FormEvent) => { event.preventDefault(); setStatus(paidAmount >= assessed ? 'Fully Disbursed' : 'Partially Disbursed'); showNotice('Compensation payment recorded'); };
+  return <section className="space-y-5"><div><p className="text-xs font-semibold uppercase tracking-wide text-blue-600">Compensation workspace</p><h1 className="mt-1 text-2xl font-bold text-[#123e7e]">Track Compensation</h1><p className="mt-1 text-sm text-slate-500">Award {award.number} · {award.parcels} parcels</p></div><div className="grid gap-4 sm:grid-cols-3"><div className="card p-4"><p className="text-xs text-slate-500">Assessed</p><p className="mt-1 text-xl font-bold text-[#123e7e]">₹ {assessed.toLocaleString('en-IN')}</p></div><div className="card p-4"><p className="text-xs text-slate-500">Paid</p><p className="mt-1 text-xl font-bold text-emerald-600">₹ {paidAmount.toLocaleString('en-IN')}</p></div><div className="card p-4"><p className="text-xs text-slate-500">Status</p><p className="mt-1 text-sm font-bold text-blue-700">{status}</p></div></div><form onSubmit={recordPayment} className="card p-5"><label className="block text-xs font-semibold text-slate-600">Amount disbursed (₹)<input required type="number" min="0" max={assessed} value={paid} onChange={(event) => setPaid(event.target.value)} className="mt-2 w-full rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 text-sm outline-none focus:border-blue-500" placeholder="Enter payment amount" /></label><div className="mt-5 flex justify-end"><button type="submit" className="rounded-lg bg-[#0b3b82] px-4 py-2.5 text-sm font-semibold text-white">Record Disbursement <ArrowRight className="ml-1 inline" size={15} /></button></div></form></section>;
+}
+
+function PossessionWorkspace({ award, showNotice }: { award: AwardRecord | null; showNotice: (text: string) => void }) {
+  const [status, setStatus] = useState('Pending Handover');
+  const [date, setDate] = useState('');
+  if (!award || award.status !== 'Declared') return <section className="card p-8 text-center"><MapPin className="mx-auto text-blue-600" size={36} /><h1 className="mt-4 text-xl font-bold text-[#123e7e]">Possession Tracking</h1><p className="mt-2 text-sm text-slate-500">A declared award is required before recording possession.</p></section>;
+  const recordPossession = (event: FormEvent) => { event.preventDefault(); setStatus('Possession Recorded'); showNotice('Possession recorded successfully'); };
+  return <section className="space-y-5"><div><p className="text-xs font-semibold uppercase tracking-wide text-blue-600">Possession workspace</p><h1 className="mt-1 text-2xl font-bold text-[#123e7e]">Record Land Possession</h1><p className="mt-1 text-sm text-slate-500">Award {award.number} · {award.parcels} parcels covered</p></div><form onSubmit={recordPossession} className="card max-w-2xl p-5"><label className="block text-xs font-semibold text-slate-600">Handover date<input required type="date" value={date} onChange={(event) => setDate(event.target.value)} className="mt-2 w-full rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 text-sm outline-none focus:border-blue-500" /></label><label className="mt-4 block text-xs font-semibold text-slate-600">Handover officer<input required className="mt-2 w-full rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 text-sm outline-none focus:border-blue-500" placeholder="Officer name and designation" /></label><label className="mt-4 block text-xs font-semibold text-slate-600">Possession memo<input required type="file" className="mt-2 block w-full rounded-lg border border-dashed border-[#b9cbe0] bg-[#f8fbff] px-3 py-3 text-xs text-slate-500" /></label><p className="mt-4 text-sm font-semibold text-blue-700">Status: {status}</p><button type="submit" className="mt-5 rounded-lg bg-[#0b3b82] px-4 py-2.5 text-sm font-semibold text-white">Record Possession</button></form></section>;
+}
+
+function RrWorkspace({ proposal, showNotice }: { proposal: ProposalRecord | null; showNotice: (text: string) => void }) {
+  const [status, setStatus] = useState('Survey Pending');
+  const [families, setFamilies] = useState('');
+  if (!proposal) return <section className="card p-8 text-center"><Users className="mx-auto text-blue-600" size={36} /><h1 className="mt-4 text-xl font-bold text-[#123e7e]">R&amp;R Monitoring</h1><p className="mt-2 text-sm text-slate-500">Submit a proposal before starting R&amp;R monitoring.</p></section>;
+  const saveRr = (event: FormEvent) => { event.preventDefault(); setStatus('Survey Completed'); showNotice('R&R survey updated'); };
+  return <section className="space-y-5"><div><p className="text-xs font-semibold uppercase tracking-wide text-blue-600">Rehabilitation and resettlement</p><h1 className="mt-1 text-2xl font-bold text-[#123e7e]">R&amp;R Monitoring</h1><p className="mt-1 text-sm text-slate-500">Track support for affected and displaced families under {proposal.name}.</p></div><form onSubmit={saveRr} className="card max-w-2xl p-5"><label className="block text-xs font-semibold text-slate-600">Affected families<input required type="number" min="0" value={families} onChange={(event) => setFamilies(event.target.value)} className="mt-2 w-full rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 text-sm outline-none focus:border-blue-500" /></label><label className="mt-4 block text-xs font-semibold text-slate-600">R&amp;R package<select className="mt-2 w-full rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 text-sm outline-none"><option>Housing and livelihood support</option><option>Land-for-land package</option><option>One-time rehabilitation grant</option></select></label><label className="mt-4 block text-xs font-semibold text-slate-600">Survey report<input required type="file" className="mt-2 block w-full rounded-lg border border-dashed border-[#b9cbe0] bg-[#f8fbff] px-3 py-3 text-xs text-slate-500" /></label><p className="mt-4 text-sm font-semibold text-blue-700">Status: {status}</p><button type="submit" className="mt-5 rounded-lg bg-[#0b3b82] px-4 py-2.5 text-sm font-semibold text-white">Update R&amp;R Status</button></form></section>;
+}
+
+function DocumentsWorkspace({ showNotice }: { showNotice: (text: string) => void }) {
+  const [documents, setDocuments] = useState<string[]>(['Award Notice · v2.0', 'Land Schedule · v1.0']);
+  const addDocument = (event: React.ChangeEvent<HTMLInputElement>) => { const file = event.target.files?.[0]; if (file) { setDocuments((current) => [...current, `${file.name} · v1.0`]); showNotice('Document added to repository'); } };
+  return <section className="space-y-5"><div><p className="text-xs font-semibold uppercase tracking-wide text-blue-600">Secure repository</p><h1 className="mt-1 text-2xl font-bold text-[#123e7e]">Document Management</h1><p className="mt-1 text-sm text-slate-500">Version-controlled project records and audit-ready files.</p></div><section className="card p-5"><label className="inline-flex cursor-pointer rounded-lg bg-[#0b3b82] px-4 py-2.5 text-sm font-semibold text-white">Upload Document<input type="file" onChange={addDocument} className="hidden" /></label><div className="mt-5 divide-y divide-slate-100">{documents.map((document) => <div key={document} className="flex items-center justify-between py-3 text-sm"><span className="font-semibold text-slate-700">{document}</span><span className="text-xs text-emerald-600">Verified</span></div>)}</div></section></section>;
+}
+
+function AnalyticsWorkspace() {
+  return <section className="space-y-5"><div><p className="text-xs font-semibold uppercase tracking-wide text-blue-600">Decision support</p><h1 className="mt-1 text-2xl font-bold text-[#123e7e]">Analytics</h1><p className="mt-1 text-sm text-slate-500">National and state-wise acquisition performance.</p></div><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{[{ label: 'Area acquired', value: '76%' }, { label: 'Awards declared', value: '68%' }, { label: 'Compensation paid', value: '81%' }, { label: 'R&R progress', value: '62%' }].map((item) => <div key={item.label} className="card p-5"><p className="text-xs text-slate-500">{item.label}</p><p className="mt-2 text-3xl font-bold text-[#123e7e]">{item.value}</p><div className="mt-4 h-2 rounded-full bg-slate-100"><div className="h-2 w-3/4 rounded-full bg-blue-600" /></div></div>)}</div></section>;
+}
+
+function ReportsWorkspace({ showNotice }: { showNotice: (text: string) => void }) {
+  const reports = ['State-wise acquisition progress', 'Compensation disbursement summary', 'R&R affected families report', 'Pending approvals register'];
+  return <section className="space-y-5"><div><p className="text-xs font-semibold uppercase tracking-wide text-blue-600">Management information system</p><h1 className="mt-1 text-2xl font-bold text-[#123e7e]">Reports</h1><p className="mt-1 text-sm text-slate-500">Generate executive and operational reports.</p></div><div className="card divide-y divide-slate-100">{reports.map((report) => <div key={report} className="flex flex-wrap items-center justify-between gap-3 p-4"><span className="font-semibold text-slate-700">{report}</span><button type="button" onClick={() => showNotice(`${report} generated`)} className="rounded-lg border border-[#0b3b82] px-3 py-2 text-xs font-semibold text-[#0b3b82]">Generate Report</button></div>)}</div></section>;
+}
+
+function DashboardShell({ onLogout, role }: { onLogout: () => void; role: StakeholderRole }) {
   const { language, setLanguage, t } = useLanguage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(true);
   const [activeSection, setActiveSection] = useState('Dashboard');
   const [filters, setFilters] = useState({ state: 'Maharashtra', district: 'Nashik', project: 'All Projects', period: 'Last 6 Months' });
   const [zoom, setZoom] = useState(1);
+  const [mapExpanded, setMapExpanded] = useState(false);
   const [notice, setNotice] = useState('');
+  const [submittedProposal, setSubmittedProposal] = useState<ProposalRecord | null>(null);
+  const [issuedNotification, setIssuedNotification] = useState<NotificationRecord | null>(null);
+  const [declaredAward, setDeclaredAward] = useState<AwardRecord | null>(null);
   const updateFilter = (key: keyof typeof filters, value: string) => setFilters((current) => ({ ...current, [key]: value }));
   const showNotice = (text: string) => { setNotice(text); window.setTimeout(() => setNotice(''), 2200); };
 
   return (
     <div className="flex min-h-screen bg-[#f4f7fb]">
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-[232px] flex-col bg-[#0b3b82] text-white transition-transform lg:static lg:translate-x-0 ${
+        className={`dashboard-sidebar fixed inset-y-4 left-4 z-40 flex w-[232px] flex-col bg-[#0b3b82]/90 text-white transition-transform lg:sticky lg:top-4 lg:inset-y-auto lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -461,8 +578,8 @@ function DashboardShell({ onLogout }: { onLogout: () => void }) {
           </button>
         </div>
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-          {sidebarItems.map((item) => (
-            <button key={item.label} type="button" onClick={() => { setActiveSection(item.label); setSidebarOpen(false); showNotice(`${item.label} section selected`); }} className={`sidebar-item ${activeSection === item.label ? 'active' : ''}`}>
+          {sidebarItems.filter((item) => roleNavigation[role].includes(item.label)).map((item) => (
+            <button key={item.label} type="button" onClick={() => { if (item.label === 'DPR Assessment') { window.open('https://voidframe2.vercel.app/', '_blank', 'noopener,noreferrer'); return; } setActiveSection(item.label); setSidebarOpen(false); showNotice(`${item.label} section selected`); }} className={`sidebar-item ${activeSection === item.label ? 'active' : ''}`}>
               <item.icon size={17} />
               {item.label === 'Dashboard' ? t('dashboard') : item.label === 'Land Parcels' ? t('landParcels') : item.label === 'Approvals' ? t('approvals') : item.label === 'Compensation' ? t('compensation') : item.label === 'Documents' ? t('documents') : item.label === 'Analytics' ? t('analytics') : item.label === 'Reports' ? t('reports') : item.label === 'Settings' ? t('settings') : item.label === 'R&R' ? t('rr') : item.label}
             </button>
@@ -504,9 +621,9 @@ function DashboardShell({ onLogout }: { onLogout: () => void }) {
           </button>
           <select aria-label="Language" value={language} onChange={(event) => setLanguage(event.target.value as Language)} className="rounded-lg border border-[#d7e2ef] bg-white px-2 py-2 text-[12px] font-semibold text-[#0b3b82]"><option value="en">EN</option><option value="hi">हिंदी</option></select>
           <button type="button" onClick={onLogout} className="flex items-center gap-2 rounded-lg border border-[#d7e2ef] px-2 py-1.5 text-left">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0b3b82] text-[11px] font-bold text-white">DA</div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0b3b82] text-[11px] font-bold text-white">{stakeholderAccounts[role].initials}</div>
             <div className="hidden leading-tight sm:block">
-              <p className="text-[12px] font-bold text-[#123e7e]">District Administrator</p>
+              <p className="text-[12px] font-bold text-[#123e7e]">{stakeholderAccounts[role].label}</p>
               <p className="text-[10px] text-slate-500">Nashik, Maharashtra</p>
             </div>
             <ChevronDown size={14} className="text-slate-400" />
@@ -514,6 +631,17 @@ function DashboardShell({ onLogout }: { onLogout: () => void }) {
         </header>
 
         <main className="flex-1 overflow-x-hidden p-4 sm:p-6">
+          {activeSection === 'Projects' && <ProposalWorkspace showNotice={showNotice} onSubmitted={setSubmittedProposal} />}
+          {activeSection === 'Approvals' && <VerificationWorkspace proposal={submittedProposal} showNotice={showNotice} onUpdate={(status) => setSubmittedProposal((current) => current ? { ...current, status } : current)} />}
+          {activeSection === 'Notifications' && <NotificationWorkspace proposal={submittedProposal} showNotice={showNotice} onIssued={setIssuedNotification} />}
+          {activeSection === 'Awards' && <AwardWorkspace proposal={submittedProposal} notification={issuedNotification} showNotice={showNotice} onDeclared={setDeclaredAward} />}
+          {activeSection === 'Compensation' && <CompensationWorkspace award={declaredAward} showNotice={showNotice} />}
+          {activeSection === 'Land Parcels' && <PossessionWorkspace award={declaredAward} showNotice={showNotice} />}
+          {activeSection === 'R&R' && <RrWorkspace proposal={submittedProposal} showNotice={showNotice} />}
+          {activeSection === 'Documents' && <DocumentsWorkspace showNotice={showNotice} />}
+          {activeSection === 'Analytics' && <AnalyticsWorkspace />}
+          {activeSection === 'Reports' && <ReportsWorkspace showNotice={showNotice} />}
+          {activeSection !== 'Projects' && activeSection !== 'Approvals' && activeSection !== 'Notifications' && activeSection !== 'Awards' && activeSection !== 'Compensation' && activeSection !== 'Land Parcels' && activeSection !== 'R&R' && activeSection !== 'Documents' && activeSection !== 'Analytics' && activeSection !== 'Reports' && <>
           <div className="mb-5 flex flex-wrap items-start justify-end gap-4">
             <div className="flex flex-wrap gap-2">
               <label className="filter-chip"><span>{t('state')}</span><select value={filters.state} onChange={(event) => updateFilter('state', event.target.value)} aria-label="Filter by state"><option>Maharashtra</option><option>Gujarat</option><option>Rajasthan</option></select><ChevronDown size={14} /></label>
@@ -542,7 +670,7 @@ function DashboardShell({ onLogout }: { onLogout: () => void }) {
                 <h2 className="flex items-center gap-2 text-sm font-bold text-[#123e7e]">
                   <MapIcon size={17} /> {t('map')}
                 </h2>
-                <button type="button" onClick={() => showNotice('Opening the full Nashik district map')} className="text-xs font-semibold text-[#1456c0]">
+                <button type="button" onClick={() => setMapExpanded(true)} className="text-xs font-semibold text-[#1456c0]">
                   {t('fullMap')} <ArrowRight size={12} className="inline" />
                 </button>
               </div>
@@ -572,6 +700,8 @@ function DashboardShell({ onLogout }: { onLogout: () => void }) {
 
               </div>
             </section>
+
+            {mapExpanded && <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm"><section className="relative h-[min(820px,calc(100vh-2rem))] w-full max-w-6xl overflow-hidden rounded-2xl bg-white p-4 shadow-2xl"><div className="mb-3 flex items-center justify-between"><div><h2 className="flex items-center gap-2 text-lg font-bold text-[#123e7e]"><MapIcon size={19} /> {t('map')}</h2><p className="text-xs text-slate-500">Interactive district view · Zoom {Math.round(zoom * 100)}%</p></div><button type="button" onClick={() => setMapExpanded(false)} className="rounded-full border border-[#d7e2ef] p-2 text-slate-600 hover:bg-slate-50" aria-label="Close full map"><X size={18} /></button></div><div className="relative h-[calc(100%-4.5rem)] overflow-hidden rounded-xl bg-cover bg-center" style={{ backgroundImage: `linear-gradient(rgba(8,40,28,0.18), rgba(8,40,28,0.18)), url(${MAP_BG})`, backgroundSize: `${zoom * 100}% auto` }}><svg className="absolute inset-0 h-full w-full" viewBox="0 0 800 400" preserveAspectRatio="none" aria-hidden="true"><polygon points="120,80 220,60 280,140 180,190" fill="rgba(34,197,94,0.45)" stroke="#16a34a" strokeWidth="2" /><polygon points="300,90 420,70 460,170 320,200" fill="rgba(250,204,21,0.4)" stroke="#ca8a04" strokeWidth="2" /><polygon points="480,100 600,80 640,180 500,210" fill="rgba(59,130,246,0.4)" stroke="#2563eb" strokeWidth="2" /><polygon points="180,230 300,210 340,300 200,330" fill="rgba(249,115,22,0.4)" stroke="#ea580c" strokeWidth="2" /><polygon points="380,240 520,220 560,320 400,340" fill="rgba(239,68,68,0.4)" stroke="#dc2626" strokeWidth="2" /></svg><div className="absolute left-4 top-4 overflow-hidden rounded-lg bg-white text-sm font-bold text-slate-600 shadow"><button type="button" onClick={() => setZoom((value) => Math.min(value + 0.2, 2.5))} className="block w-10 py-2 hover:bg-slate-50">+</button><div className="border-t border-slate-200" /><button type="button" onClick={() => setZoom((value) => Math.max(value - 0.2, 0.6))} className="block w-10 py-2 hover:bg-slate-50">−</button></div><div className="absolute right-4 top-4 rounded-lg bg-white/95 p-4 text-xs text-slate-600 shadow"><p className="mb-2 font-bold text-slate-700">{t('parcelStatus')}</p><p className="mb-1"><i className="dot bg-green-500" />{t('acquired')}</p><p className="mb-1"><i className="dot bg-yellow-400" />{t('underAcquisition')}</p><p className="mb-1"><i className="dot bg-blue-500" />{t('compensationPending')}</p><p className="mb-1"><i className="dot bg-orange-400" />{t('rrPending')}</p><p><i className="dot bg-red-500" />{t('disputed')}</p></div></div></section></div>}
 
             <div className="space-y-4">
               <section className="card p-4">
@@ -659,6 +789,7 @@ function DashboardShell({ onLogout }: { onLogout: () => void }) {
               ))}
             </Panel>
           </div>
+          </>}
         </main>
       </div>
 
@@ -891,11 +1022,12 @@ function AiChatbot({ open, setOpen }: { open: boolean; setOpen: (open: boolean) 
 function App() {
   const [view, setView] = useState<View>('home');
   const [language, setLanguage] = useState<Language>('en');
+  const [role, setRole] = useState<StakeholderRole>('District Administration');
   const content = view === 'home'
     ? <HomePage onLogin={() => setView('login')} />
     : view === 'login'
-      ? <LoginPage onLogin={() => setView('dashboard')} />
-      : <DashboardShell onLogout={() => setView('login')} />;
+      ? <LoginPage onLogin={(selectedRole) => { setRole(selectedRole); setView('dashboard'); }} />
+      : <DashboardShell role={role} onLogout={() => setView('login')} />;
 
   return <LanguageContext.Provider value={{ language, setLanguage }}>{content}</LanguageContext.Provider>;
 }
