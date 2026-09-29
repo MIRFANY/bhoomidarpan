@@ -38,8 +38,83 @@ body {
 .public-footer {
   position: relative;
   color: #fff;
-  background: #1d3976;
+  background: #242424;
 }
+
+.footer-location-layout {
+  display: grid;
+  grid-template-columns: minmax(250px, 0.7fr) minmax(0, 1.8fr);
+  gap: 70px;
+  max-width: 1700px;
+  margin: 0 auto;
+  padding: 36px 5.5% 42px;
+}
+
+.footer-location-layout h2 {
+  margin: 0 0 38px;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.footer-links-column .footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.footer-links-column .footer-links button {
+  width: fit-content;
+  font-size: 17px;
+  color: #d8d8d8;
+}
+
+.footer-location .location-map {
+  position: relative;
+  min-height: 255px;
+  overflow: hidden;
+  background-position: center;
+  background-size: cover;
+  border: 1px solid #555;
+}
+
+.location-map::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  background: rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+
+.location-label {
+  position: absolute;
+  top: 20px;
+  left: 22px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  background: #fff;
+  color: #334155;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.location-zoom {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+  color: #555;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.location-zoom button { width: 42px; height: 38px; border: 0; background: #fff; color: #555; font-size: 25px; cursor: pointer; }
+.location-zoom button + button { border-top: 1px solid #ddd; }
 
 .partner-strip {
   display: flex;
@@ -90,6 +165,9 @@ body {
 .back-top { position: absolute; right: 28px; top: 50%; border: 0; border-radius: 50%; background: #193b79; color: #fff; padding: 10px; cursor: pointer; }
 
 @media (max-width: 900px) {
+  .footer-location-layout { grid-template-columns: 1fr; gap: 34px; padding: 32px 24px; }
+  .footer-location-layout h2 { margin-bottom: 24px; font-size: 24px; }
+  .footer-location .location-map { min-height: 220px; }
   .partner-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .footer-main { flex-direction: column; padding: 30px 24px; }
   .footer-social { text-align: left; }

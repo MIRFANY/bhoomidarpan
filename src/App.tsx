@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { createContext, useContext, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import {
   Activity,
   AlertTriangle,
@@ -41,9 +41,52 @@ import {
 } from 'lucide-react';
 
 type View = 'home' | 'login' | 'dashboard';
+type Language = 'en' | 'hi';
 type IconType = typeof FileText;
 
+const translations = {
+  en: {
+    platform: 'BhoomiDarpan',
+    tagline: 'Transparent · Efficient · Data-Driven Land Acquisition',
+    home: 'Home', about: 'About', howItWorks: 'How It Works', projects: 'Projects', contact: 'Contact',
+    officerLogin: 'Officer Login', login: 'Login', explore: 'Explore Platform',
+    digitalGovernance: 'Digital land governance',
+    heroText: 'A secure, integrated platform for transparent land acquisition, compensation tracking, approvals, and rehabilitation across India.',
+    secureAccess: 'Secure Access', integratedRecords: 'Integrated Records', realTime: 'Real-time Monitoring',
+    stakeholderPlatform: 'One platform for every stakeholder',
+    loginAccess: 'Access your BhoomiDarpan account', officialId: 'Official Email / User ID', password: 'Password', forgot: 'Forgot Password?',
+    signIn: 'Login', secureNotice: 'This is a secure Government of India portal. Unauthorized access is prohibited.',
+    dashboard: 'Dashboard', landParcels: 'Land Parcels', approvals: 'Approvals', compensation: 'Compensation', documents: 'Documents', analytics: 'Analytics', reports: 'Reports', settings: 'Settings', rr: 'R&R',
+    state: 'State', district: 'District', project: 'Project', period: 'Period', allProjects: 'All Projects', lastSixMonths: 'Last 6 Months',
+    map: 'Land Acquisition Map – Nashik District', fullMap: 'View Full Map', parcelStatus: 'Parcel Status', acquired: 'Acquired', underAcquisition: 'Under Acquisition', compensationPending: 'Compensation Pending', rrPending: 'R&R Pending', disputed: 'Disputed',
+    progress: 'Acquisition Progress – NH-60 Project', viewDetails: 'View Details →', risk: 'AI Risk Analysis', viewAnalysis: 'View Analysis',
+    assistant: 'BhoomiDarpan AI Assistant', online: 'Your intelligent land governance assistant',
+  },
+  hi: {
+    platform: 'भूमि दर्पण',
+    tagline: 'पारदर्शी · कुशल · डेटा-संचालित भूमि अधिग्रहण',
+    home: 'मुख्य पृष्ठ', about: 'परिचय', howItWorks: 'यह कैसे काम करता है', projects: 'परियोजनाएँ', contact: 'संपर्क',
+    officerLogin: 'अधिकारी लॉगिन', login: 'लॉगिन', explore: 'प्लेटफ़ॉर्म देखें',
+    digitalGovernance: 'डिजिटल भूमि प्रशासन',
+    heroText: 'भारत में पारदर्शी भूमि अधिग्रहण, मुआवज़ा निगरानी, अनुमोदन और पुनर्वास के लिए सुरक्षित एकीकृत प्लेटफ़ॉर्म।',
+    secureAccess: 'सुरक्षित पहुँच', integratedRecords: 'एकीकृत रिकॉर्ड', realTime: 'रियल-टाइम निगरानी',
+    stakeholderPlatform: 'हर हितधारक के लिए एक प्लेटफ़ॉर्म',
+    loginAccess: 'अपने भूमि दर्पण खाते में प्रवेश करें', officialId: 'आधिकारिक ईमेल / उपयोगकर्ता आईडी', password: 'पासवर्ड', forgot: 'पासवर्ड भूल गए?',
+    signIn: 'लॉगिन', secureNotice: 'यह भारत सरकार का सुरक्षित पोर्टल है। अनधिकृत प्रवेश प्रतिबंधित है।',
+    dashboard: 'डैशबोर्ड', landParcels: 'भूमि पार्सल', approvals: 'अनुमोदन', compensation: 'मुआवज़ा', documents: 'दस्तावेज़', analytics: 'विश्लेषण', reports: 'रिपोर्ट', settings: 'सेटिंग्स', rr: 'पुनर्वास',
+    state: 'राज्य', district: 'जिला', project: 'परियोजना', period: 'अवधि', allProjects: 'सभी परियोजनाएँ', lastSixMonths: 'पिछले 6 महीने',
+    map: 'भूमि अधिग्रहण मानचित्र – नासिक जिला', fullMap: 'पूरा मानचित्र देखें', parcelStatus: 'पार्सल स्थिति', acquired: 'अधिग्रहित', underAcquisition: 'अधिग्रहणाधीन', compensationPending: 'मुआवज़ा लंबित', rrPending: 'पुनर्वास लंबित', disputed: 'विवादित',
+    progress: 'अधिग्रहण प्रगति – NH-60 परियोजना', viewDetails: 'विवरण देखें →', risk: 'AI जोखिम विश्लेषण', viewAnalysis: 'विश्लेषण देखें',
+    assistant: 'भूमि दर्पण AI सहायक', online: 'आपका बुद्धिमान भूमि प्रशासन सहायक',
+  },
+} as const;
+
+type TranslationKey = keyof typeof translations.en;
+const LanguageContext = createContext<{ language: Language; setLanguage: (language: Language) => void }>({ language: 'en', setLanguage: () => undefined });
+const useLanguage = () => { const context = useContext(LanguageContext); return { ...context, t: (key: TranslationKey) => translations[context.language][key] }; };
+
 const LOGIN_BG = '/images/hero-background.jpeg';
+const LOGIN_VIDEO = '/images/background-video.mp4';
 const MAP_BG =
   'https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1400&q=80';
 
@@ -169,74 +212,72 @@ function ToneIcon({ icon: Icon, tone, size = 22 }: { icon: IconType; tone: strin
 }
 
 function BrandBlock() {
+  const { t } = useLanguage();
   return (
     <div className="min-w-0 text-left">
-      <p className="text-[17px] font-bold leading-tight text-[#123a7c]">BhoomiDarpan</p>
-      <p className="mt-0.5 text-[11px] text-slate-500">Transparent · Efficient · Data-Driven Land Acquisition</p>
+      <p className="text-[17px] font-bold leading-tight text-[#123a7c]">{t('platform')}</p>
+      <p className="mt-0.5 text-[11px] text-slate-500">{t('tagline')}</p>
     </div>
   );
 }
 
 function PublicHeader({ onNav, onLogin }: { onNav?: (label: string) => void; onLogin?: () => void }) {
+  const { language, setLanguage, t } = useLanguage();
   const items = ['Home', 'About', 'How It Works', 'Projects', 'Contact'];
+  const labels = [t('home'), t('about'), t('howItWorks'), t('projects'), t('contact')];
   return (
     <header className="relative z-20 border-b border-white/60 bg-white/95 shadow-sm backdrop-blur">
       <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
         <BrandBlock />
         <nav className="hidden items-center gap-6 lg:flex">
-          {items.map((item) => (
+          {items.map((item, index) => (
             <button
               key={item}
               type="button"
               onClick={() => onNav?.(item)}
               className="text-[13px] font-semibold text-slate-600 transition hover:text-[#0b3b82]"
             >
-              {item}
+              {labels[index]}
             </button>
           ))}
-          {onLogin && <button type="button" onClick={onLogin} className="rounded-lg bg-[#0b3b82] px-4 py-2 text-[12px] font-semibold text-white shadow-sm transition hover:bg-[#092e67]">Officer Login</button>}
+          <select aria-label="Language" value={language} onChange={(event) => setLanguage(event.target.value as Language)} className="rounded-lg border border-[#d7e2ef] bg-white px-2 py-2 text-[12px] font-semibold text-[#0b3b82]"><option value="en">EN</option><option value="hi">हिंदी</option></select>
+          {onLogin && <button type="button" onClick={onLogin} className="rounded-lg bg-[#0b3b82] px-4 py-2 text-[12px] font-semibold text-white shadow-sm transition hover:bg-[#092e67]">{t('officerLogin')}</button>}
         </nav>
-        {onLogin && <button type="button" onClick={onLogin} className="rounded-lg bg-[#0b3b82] px-3 py-2 text-[12px] font-semibold text-white lg:hidden">Login</button>}
+        <div className="flex items-center gap-2 lg:hidden"><select aria-label="Language" value={language} onChange={(event) => setLanguage(event.target.value as Language)} className="rounded-lg border border-[#d7e2ef] bg-white px-2 py-2 text-[12px] font-semibold text-[#0b3b82]"><option value="en">EN</option><option value="hi">हिंदी</option></select>{onLogin && <button type="button" onClick={onLogin} className="rounded-lg bg-[#0b3b82] px-3 py-2 text-[12px] font-semibold text-white">{t('login')}</button>}</div>
       </div>
     </header>
   );
 }
 
 function PublicFooter() {
-  const partnerTiles = [
-    { title: 'Digital India', detail: 'Power to Empower' },
-    { title: 'india.gov.in', detail: 'National Portal of India' },
-    { title: 'myGov', detail: 'Meri Sarkar' },
-    { title: 'NMDS', detail: 'National Metadata Structure' },
-  ];
-
   return <footer className="public-footer">
-    <div className="partner-strip"><button type="button" className="partner-arrow" aria-label="Previous partners">‹</button><div className="partner-grid">{partnerTiles.map((tile) => <div key={tile.title} className="partner-tile"><strong>{tile.title}</strong><span>{tile.detail}</span></div>)}</div><button type="button" className="partner-arrow" aria-label="Next partners">›</button></div>
-    <div className="footer-main"><div><h2>Useful Links</h2><div className="footer-links"><button type="button">› Archives</button><button type="button">› Website Policies</button><button type="button">› Related Links</button><button type="button">› Sitemap</button><button type="button">› Help</button><button type="button">› Contact Us</button><button type="button">› Feedback</button></div></div><div className="footer-social"><h2>Subscribe for Update</h2><div className="social-icons"><button type="button" aria-label="X social link">X</button><button type="button" aria-label="YouTube social link"><Youtube size={19} /></button><button type="button" aria-label="Facebook social link"><Facebook size={19} /></button><button type="button" aria-label="Instagram social link"><Instagram size={19} /></button></div><p>Last Updated On: 29.09.2026</p></div></div>
+    <div className="footer-location-layout"><div className="footer-links-column"><h2>Our Links</h2><div className="footer-links"><button type="button">› LA Target Monitoring</button><button type="button">› About Us</button><button type="button">› Public Grievances</button><button type="button">› Act</button><button type="button">› Search</button><button type="button">› FAQs</button><button type="button">› Privacy Policy</button></div></div><div className="footer-location"><h2>Location</h2><div className="location-map" style={{ backgroundImage: `url(${MAP_BG})` }}><div className="location-label"><MapPin size={18} /> Transport Bhawan</div><div className="location-zoom"><button type="button" aria-label="Zoom in">+</button><button type="button" aria-label="Zoom out">−</button></div></div></div></div>
     <button type="button" className="back-top" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="Back to top"><ArrowUp size={20} /></button>
   </footer>;
 }
 
 function HomePage({ onLogin }: { onLogin: () => void }) {
+  const { t } = useLanguage();
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   return (
     <div className="min-h-screen bg-[#eef3f8]">
       <PublicHeader onLogin={onLogin} onNav={(label) => scrollTo(label === 'Home' ? 'home-top' : label === 'About' ? 'about' : 'services')} />
       <main id="home-top">
-        <section className="relative min-h-[calc(100vh-72px)] overflow-hidden">
+        <section className="relative min-h-[560px] overflow-hidden">
           <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${LOGIN_BG})` }} />
+          <video className="absolute inset-0 h-full w-full object-cover" src={LOGIN_VIDEO} autoPlay muted loop playsInline poster={LOGIN_BG} aria-hidden="true" />
           <div className="absolute inset-0 bg-gradient-to-r from-white via-white/88 to-white/20" />
-          <div className="relative mx-auto flex min-h-[calc(100vh-72px)] max-w-[1440px] items-center px-5 py-16 sm:px-8 lg:px-10">
+          <div className="relative mx-auto flex min-h-[560px] max-w-[1440px] items-center px-5 py-12 sm:px-8 lg:px-10">
             <div className="max-w-2xl">
-              <div className="mb-5 flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.08em] text-[#56708f]"><span className="h-[3px] w-9 bg-[#f39b3a]" />Digital land governance</div>
-              <h1 className="text-4xl font-bold leading-[1.08] tracking-[-0.03em] text-[#123e7e] sm:text-6xl">BhoomiDarpan</h1>
-              <p className="mt-5 max-w-xl text-base leading-7 text-[#38547d]">A secure, integrated platform for transparent land acquisition, compensation tracking, approvals, and rehabilitation across India.</p>
-              <div className="mt-8 flex flex-wrap gap-3"><button type="button" onClick={onLogin} className="rounded-lg bg-[#0b3b82] px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-[#092e67]">Officer Login <ArrowRight className="ml-2 inline" size={16} /></button><button type="button" onClick={() => scrollTo('services')} className="rounded-lg border border-[#174d9d] bg-white/80 px-6 py-3 text-sm font-semibold text-[#0b3b82]">Explore Platform</button></div>
+              <div className="mb-5 flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.08em] text-[#56708f]"><span className="h-[3px] w-9 bg-[#f39b3a]" />{t('digitalGovernance')}</div>
+              <h1 className="text-4xl font-bold leading-[1.08] tracking-[-0.03em] text-[#123e7e] sm:text-6xl">{t('platform')}</h1>
+              <p className="mt-5 max-w-xl text-base leading-7 text-[#38547d]">{t('heroText')}</p>
+              <div className="mt-8 flex flex-wrap gap-3"><button type="button" onClick={onLogin} className="rounded-lg bg-[#0b3b82] px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-[#092e67]">{t('officerLogin')} <ArrowRight className="ml-2 inline" size={16} /></button><button type="button" onClick={() => scrollTo('services')} className="rounded-lg border border-[#174d9d] bg-white/80 px-6 py-3 text-sm font-semibold text-[#0b3b82]">{t('explore')}</button></div>
             </div>
           </div>
         </section>
         <section id="about" className="mx-auto max-w-6xl px-5 py-16 sm:px-8"><div className="grid gap-5 md:grid-cols-3"><div className="card p-5"><ShieldCheck className="text-blue-600" /><h2 className="mt-4 font-bold text-[#123e7e]">Secure Access</h2><p className="mt-2 text-sm text-slate-500">Role-based access for authorized departments and agencies.</p></div><div className="card p-5"><Database className="text-emerald-600" /><h2 className="mt-4 font-bold text-[#123e7e]">Integrated Records</h2><p className="mt-2 text-sm text-slate-500">Unified project, parcel, document, and compensation records.</p></div><div className="card p-5"><BarChart3 className="text-violet-600" /><h2 className="mt-4 font-bold text-[#123e7e]">Real-time Monitoring</h2><p className="mt-2 text-sm text-slate-500">Track progress, approvals, risks, and key milestones.</p></div></div></section>
-        <section id="services" className="bg-white px-5 py-16 text-center"><h2 className="text-2xl font-bold text-[#123e7e]">One platform for every stakeholder</h2><p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate-500">Connect Central Ministries, State Governments, District Authorities, and Implementing Agencies through one transparent workflow.</p></section>
+        <section id="services" className="bg-white px-5 py-16 text-center"><h2 className="text-2xl font-bold text-[#123e7e]">{t('stakeholderPlatform')}</h2><p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate-500">Connect Central Ministries, State Governments, District Authorities, and Implementing Agencies through one transparent workflow.</p></section>
       </main>
       <PublicFooter />
     </div>
@@ -244,6 +285,7 @@ function HomePage({ onLogin }: { onLogin: () => void }) {
 }
 
 function LoginPage({ onLogin }: { onLogin: () => void }) {
+  const { t } = useLanguage();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [username, setUsername] = useState(credentials.username);
@@ -267,6 +309,7 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${LOGIN_BG})` }}
         />
+        <video className="absolute inset-0 h-full w-full object-cover" src={LOGIN_VIDEO} autoPlay muted loop playsInline poster={LOGIN_BG} aria-hidden="true" />
         <div className="absolute inset-0 bg-gradient-to-r from-white via-white/92 to-white/35" />
         <div className="relative mx-auto grid max-w-[1440px] gap-10 px-5 py-10 sm:px-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:px-10 lg:py-14">
           <div className="max-w-[640px]">
@@ -301,12 +344,12 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
                 <br />
                 Department of Land Resources
               </p>
-              <h2 className="mt-4 text-2xl font-bold text-[#123e7e]">Officer Login</h2>
-              <p className="mt-1 text-sm text-slate-500">Access your BhoomiDarpan account</p>
+              <h2 className="mt-4 text-2xl font-bold text-[#123e7e]">{t('officerLogin')}</h2>
+              <p className="mt-1 text-sm text-slate-500">{t('loginAccess')}</p>
             </div>
 
             <label className="block text-[12px] font-semibold text-slate-600">
-              Official Email / User ID
+              {t('officialId')}
               <div className="mt-2 flex items-center gap-2 rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 focus-within:border-[#0b3b82]">
                 <Mail size={16} className="text-slate-400" />
                 <input
@@ -321,7 +364,7 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
             </label>
 
             <label className="mt-4 block text-[12px] font-semibold text-slate-600">
-              Password
+              {t('password')}
               <div className="mt-2 flex items-center gap-2 rounded-lg border border-[#d7e2ef] bg-[#f8fbff] px-3 py-2.5 focus-within:border-[#0b3b82]">
                 <Lock size={16} className="text-slate-400" />
                 <input
@@ -341,7 +384,7 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
 
             <div className="mt-2 flex justify-end">
               <button type="button" className="text-[12px] font-semibold text-[#1456c0]">
-                Forgot Password?
+                {t('forgot')}
               </button>
             </div>
 
@@ -355,7 +398,7 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
               type="submit"
               className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-[#0b3b82] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#092e67]"
             >
-              Login <ArrowRight size={16} />
+              {t('signIn')} <ArrowRight size={16} />
             </button>
 
             <div className="my-5 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
@@ -375,7 +418,7 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
 
             <div className="mt-5 flex items-start gap-2 rounded-lg bg-[#eef5ff] px-3 py-3 text-[11px] leading-4 text-[#2f5f9b]">
               <Lock size={14} className="mt-0.5 shrink-0" />
-              This is a secure Government of India portal. Unauthorized access is prohibited.
+              {t('secureNotice')}
             </div>
 
             <p className="mt-4 text-center text-[10px] text-slate-400">
@@ -390,6 +433,7 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
 }
 
 function DashboardShell({ onLogout }: { onLogout: () => void }) {
+  const { language, setLanguage, t } = useLanguage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(true);
   const [activeSection, setActiveSection] = useState('Dashboard');
@@ -420,7 +464,7 @@ function DashboardShell({ onLogout }: { onLogout: () => void }) {
           {sidebarItems.map((item) => (
             <button key={item.label} type="button" onClick={() => { setActiveSection(item.label); setSidebarOpen(false); showNotice(`${item.label} section selected`); }} className={`sidebar-item ${activeSection === item.label ? 'active' : ''}`}>
               <item.icon size={17} />
-              {item.label}
+              {item.label === 'Dashboard' ? t('dashboard') : item.label === 'Land Parcels' ? t('landParcels') : item.label === 'Approvals' ? t('approvals') : item.label === 'Compensation' ? t('compensation') : item.label === 'Documents' ? t('documents') : item.label === 'Analytics' ? t('analytics') : item.label === 'Reports' ? t('reports') : item.label === 'Settings' ? t('settings') : item.label === 'R&R' ? t('rr') : item.label}
             </button>
           ))}
         </nav>
@@ -458,6 +502,7 @@ function DashboardShell({ onLogout }: { onLogout: () => void }) {
             <Bell size={17} />
             <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">5</span>
           </button>
+          <select aria-label="Language" value={language} onChange={(event) => setLanguage(event.target.value as Language)} className="rounded-lg border border-[#d7e2ef] bg-white px-2 py-2 text-[12px] font-semibold text-[#0b3b82]"><option value="en">EN</option><option value="hi">हिंदी</option></select>
           <button type="button" onClick={onLogout} className="flex items-center gap-2 rounded-lg border border-[#d7e2ef] px-2 py-1.5 text-left">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0b3b82] text-[11px] font-bold text-white">DA</div>
             <div className="hidden leading-tight sm:block">
@@ -471,10 +516,10 @@ function DashboardShell({ onLogout }: { onLogout: () => void }) {
         <main className="flex-1 overflow-x-hidden p-4 sm:p-6">
           <div className="mb-5 flex flex-wrap items-start justify-end gap-4">
             <div className="flex flex-wrap gap-2">
-              <label className="filter-chip"><span>State</span><select value={filters.state} onChange={(event) => updateFilter('state', event.target.value)} aria-label="Filter by state"><option>Maharashtra</option><option>Gujarat</option><option>Rajasthan</option></select><ChevronDown size={14} /></label>
-              <label className="filter-chip"><span>District</span><select value={filters.district} onChange={(event) => updateFilter('district', event.target.value)} aria-label="Filter by district"><option>Nashik</option><option>Pune</option><option>Nagpur</option></select><ChevronDown size={14} /></label>
-              <label className="filter-chip"><span>Project</span><select value={filters.project} onChange={(event) => updateFilter('project', event.target.value)} aria-label="Filter by project"><option>All Projects</option><option>NH-60 Widening</option><option>Sinnar Industrial</option></select><ChevronDown size={14} /></label>
-              <label className="filter-chip"><span>Period</span><select value={filters.period} onChange={(event) => updateFilter('period', event.target.value)} aria-label="Filter by period"><option>Last 6 Months</option><option>Last 12 Months</option><option>Year to Date</option></select><ChevronDown size={14} /></label>
+              <label className="filter-chip"><span>{t('state')}</span><select value={filters.state} onChange={(event) => updateFilter('state', event.target.value)} aria-label="Filter by state"><option>Maharashtra</option><option>Gujarat</option><option>Rajasthan</option></select><ChevronDown size={14} /></label>
+              <label className="filter-chip"><span>{t('district')}</span><select value={filters.district} onChange={(event) => updateFilter('district', event.target.value)} aria-label="Filter by district"><option>Nashik</option><option>Pune</option><option>Nagpur</option></select><ChevronDown size={14} /></label>
+              <label className="filter-chip"><span>{t('project')}</span><select value={filters.project} onChange={(event) => updateFilter('project', event.target.value)} aria-label="Filter by project"><option>{t('allProjects')}</option><option>NH-60 Widening</option><option>Sinnar Industrial</option></select><ChevronDown size={14} /></label>
+              <label className="filter-chip"><span>{t('period')}</span><select value={filters.period} onChange={(event) => updateFilter('period', event.target.value)} aria-label="Filter by period"><option>{t('lastSixMonths')}</option><option>Last 12 Months</option><option>Year to Date</option></select><ChevronDown size={14} /></label>
             </div>
           </div>
 
@@ -495,10 +540,10 @@ function DashboardShell({ onLogout }: { onLogout: () => void }) {
             <section className="card p-4">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <h2 className="flex items-center gap-2 text-sm font-bold text-[#123e7e]">
-                  <MapIcon size={17} /> Land Acquisition Map – Nashik District
+                  <MapIcon size={17} /> {t('map')}
                 </h2>
                 <button type="button" onClick={() => showNotice('Opening the full Nashik district map')} className="text-xs font-semibold text-[#1456c0]">
-                  View Full Map <ArrowRight size={12} className="inline" />
+                  {t('fullMap')} <ArrowRight size={12} className="inline" />
                 </button>
               </div>
               <div className="relative h-[340px] overflow-hidden rounded-xl bg-cover bg-center" style={{ backgroundImage: `linear-gradient(rgba(8,40,28,0.18), rgba(8,40,28,0.18)), url(${MAP_BG})`, backgroundSize: `${zoom * 100}% auto` }}>
@@ -517,12 +562,12 @@ function DashboardShell({ onLogout }: { onLogout: () => void }) {
                 </div>
 
                 <div className="absolute right-3 top-3 rounded-lg bg-white/95 p-3 text-[11px] text-slate-600 shadow">
-                  <p className="mb-2 font-bold text-slate-700">Parcel Status</p>
-                  <p className="mb-1"><i className="dot bg-green-500" />Acquired</p>
-                  <p className="mb-1"><i className="dot bg-yellow-400" />Under Acquisition</p>
-                  <p className="mb-1"><i className="dot bg-blue-500" />Compensation Pending</p>
-                  <p className="mb-1"><i className="dot bg-orange-400" />R&amp;R Pending</p>
-                  <p><i className="dot bg-red-500" />Disputed</p>
+                  <p className="mb-2 font-bold text-slate-700">{t('parcelStatus')}</p>
+                  <p className="mb-1"><i className="dot bg-green-500" />{t('acquired')}</p>
+                  <p className="mb-1"><i className="dot bg-yellow-400" />{t('underAcquisition')}</p>
+                  <p className="mb-1"><i className="dot bg-blue-500" />{t('compensationPending')}</p>
+                  <p className="mb-1"><i className="dot bg-orange-400" />{t('rrPending')}</p>
+                  <p><i className="dot bg-red-500" />{t('disputed')}</p>
                 </div>
 
               </div>
@@ -532,9 +577,9 @@ function DashboardShell({ onLogout }: { onLogout: () => void }) {
               <section className="card p-4">
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="flex items-center gap-2 text-sm font-bold text-[#123e7e]">
-                    <Activity size={17} /> Acquisition Progress – NH-60 Project
+                    <Activity size={17} /> {t('progress')}
                   </h2>
-                  <button type="button" onClick={() => showNotice('Acquisition progress details selected')} className="text-xs font-semibold text-[#1456c0]">View Details →</button>
+                  <button type="button" onClick={() => showNotice('Acquisition progress details selected')} className="text-xs font-semibold text-[#1456c0]">{t('viewDetails')}</button>
                 </div>
                 <div className="space-y-0">
                   {progressSteps.map((step) => (
@@ -560,7 +605,7 @@ function DashboardShell({ onLogout }: { onLogout: () => void }) {
               <section className="overflow-hidden rounded-xl border border-[#f0c9c9] bg-gradient-to-br from-[#fff7f7] to-white p-4 shadow-sm">
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="flex items-center gap-2 text-sm font-bold text-[#123e7e]">
-                    <Sparkles size={16} className="text-violet-500" /> AI Risk Analysis
+                    <Sparkles size={16} className="text-violet-500" /> {t('risk')}
                   </h2>
                   <span className="rounded-md bg-red-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">HIGH</span>
                 </div>
@@ -573,7 +618,7 @@ function DashboardShell({ onLogout }: { onLogout: () => void }) {
                   <li className="flex items-start gap-2"><AlertTriangle size={13} className="mt-0.5 text-orange-500" /> Seasonal monsoon window approaching</li>
                 </ul>
                 <button type="button" onClick={() => showNotice('AI risk analysis opened')} className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-[#0b3b82] px-4 py-2.5 text-[12px] font-semibold text-white">
-                  View Analysis <ArrowRight size={14} />
+                  {t('viewAnalysis')} <ArrowRight size={14} />
                 </button>
               </section>
             </div>
@@ -646,6 +691,7 @@ function DayBadge({ days, tone }: { days: number; tone: string }) {
 }
 
 function AiChatbot({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) {
+  const { t } = useLanguage();
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -716,8 +762,8 @@ function AiChatbot({ open, setOpen }: { open: boolean; setOpen: (open: boolean) 
               <Bot size={20} />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold">BhoomiDarpan AI Assistant <span className="ml-1 rounded bg-white/20 px-1.5 py-0.5 text-[9px] font-semibold uppercase">Beta</span></p>
-              <p className="truncate text-[11px] text-blue-100">Your intelligent land governance assistant</p>
+              <p className="text-sm font-bold">{t('assistant')} <span className="ml-1 rounded bg-white/20 px-1.5 py-0.5 text-[9px] font-semibold uppercase">Beta</span></p>
+              <p className="truncate text-[11px] text-blue-100">{t('online')}</p>
             </div>
             <button type="button" onClick={() => setOpen(false)} className="rounded-full p-1 hover:bg-white/15" aria-label="Close chatbot">
               <X size={18} />
@@ -844,16 +890,14 @@ function AiChatbot({ open, setOpen }: { open: boolean; setOpen: (open: boolean) 
 
 function App() {
   const [view, setView] = useState<View>('home');
+  const [language, setLanguage] = useState<Language>('en');
+  const content = view === 'home'
+    ? <HomePage onLogin={() => setView('login')} />
+    : view === 'login'
+      ? <LoginPage onLogin={() => setView('dashboard')} />
+      : <DashboardShell onLogout={() => setView('login')} />;
 
-  if (view === 'home') {
-    return <HomePage onLogin={() => setView('login')} />;
-  }
-
-  if (view === 'login') {
-    return <LoginPage onLogin={() => setView('dashboard')} />;
-  }
-
-  return <DashboardShell onLogout={() => setView('login')} />;
+  return <LanguageContext.Provider value={{ language, setLanguage }}>{content}</LanguageContext.Provider>;
 }
 
 export default App;
