@@ -1,0 +1,164 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --navy: #0b3b82;
+  --navy-deep: #0a2f6b;
+  --ink: #1a2f4a;
+  --muted: #5b6f86;
+  --line: #e2eaf3;
+  --surface: #f4f7fb;
+  --card: #ffffff;
+  --accent: #f39b3a;
+  font-family: "Segoe UI", "Noto Sans", ui-sans-serif, system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--surface);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100vh;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--surface);
+}
+
+.public-footer {
+  position: relative;
+  color: #fff;
+  background: #1d3976;
+}
+
+.partner-strip {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.partner-grid {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.partner-tile {
+  display: flex;
+  min-height: 94px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e0e6ef;
+  border-radius: 4px;
+  background: #fff;
+  color: #1d3976;
+  text-align: center;
+  box-shadow: 0 3px 9px rgba(15, 45, 90, 0.12);
+}
+
+.partner-tile strong { font-size: 20px; line-height: 1; }
+.partner-tile span { margin-top: 7px; font-size: 10px; color: #637590; }
+.partner-arrow { border: 0; background: transparent; color: #1f2937; font-size: 34px; cursor: pointer; }
+.footer-main { display: flex; justify-content: space-between; gap: 40px; padding: 30px 3%; }
+.footer-main h2 { margin: 0 0 20px; font-size: 20px; text-transform: uppercase; }
+.footer-links { display: grid; grid-template-columns: repeat(4, minmax(130px, 1fr)); gap: 14px 34px; }
+.footer-links button, .social-icons button { border: 0; background: transparent; color: #fff; cursor: pointer; text-align: left; font-size: 16px; }
+.footer-links button:hover { text-decoration: underline; }
+.footer-owner { margin: 34px 0 0; font-size: 18px; }
+.footer-social { min-width: 300px; text-align: right; }
+.social-icons { display: flex; justify-content: flex-end; gap: 18px; margin-bottom: 24px; }
+.social-icons button { text-align: center; }
+.partner-badges { display: flex; justify-content: flex-end; gap: 6px; }
+.partner-badges span { display: flex; min-width: 112px; min-height: 42px; align-items: center; justify-content: center; border-radius: 3px; background: #fff; color: #193b79; font-size: 15px; line-height: 1; }
+.badge-green { color: #31b67a; }
+.footer-social > p { margin: 26px 0 0; font-size: 15px; }
+.back-top { position: absolute; right: 28px; top: 50%; border: 0; border-radius: 50%; background: #193b79; color: #fff; padding: 10px; cursor: pointer; }
+
+@media (max-width: 900px) {
+  .partner-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .footer-main { flex-direction: column; padding: 30px 24px; }
+  .footer-social { text-align: left; }
+  .social-icons, .partner-badges { justify-content: flex-start; }
+}
+
+@media (max-width: 560px) {
+  .partner-grid { grid-template-columns: 1fr; }
+  .partner-arrow { display: none; }
+  .footer-links { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .footer-owner { font-size: 14px; }
+}
+
+button,
+input {
+  font: inherit;
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-[#e2eaf3] bg-white shadow-[0_1px_3px_rgba(15,45,90,0.06)];
+  }
+
+  .filter-chip {
+    @apply inline-flex items-center gap-2 rounded-lg border border-[#d7e2ef] bg-white px-3 py-2 text-[12px] font-semibold text-[#123e7e];
+  }
+
+  .filter-chip span {
+    @apply font-normal text-slate-400;
+  }
+
+  .dot {
+    @apply mr-2 inline-block h-2.5 w-2.5 rounded-full;
+  }
+
+  .sidebar-item {
+    @apply flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] font-medium text-[#d7e6f8] transition hover:bg-white/10;
+  }
+
+  .sidebar-item.active {
+    @apply bg-white/15 text-white;
+  }
+
+  .kpi-icon {
+    @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-xl;
+  }
+
+  .pulse-dot {
+    animation: pulse-ring 1.6s ease-out infinite;
+  }
+
+  @keyframes pulse-ring {
+    0% {
+      box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.45);
+    }
+    70% {
+      box-shadow: 0 0 0 8px rgba(37, 99, 235, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
+    }
+  }
+
+  .chat-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .chat-scroll::-webkit-scrollbar-thumb {
+    background: #c5d3e6;
+    border-radius: 999px;
+  }
+}
